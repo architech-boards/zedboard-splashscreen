@@ -1,0 +1,11 @@
+#!/bin/bash
+IMAGES_DIRECTORY="../yocto/build/tmp/deploy/images/"
+
+if [ ! -d ${IMAGES_DIRECTORY} ]
+then
+   zenity --error --text="You haven't built an image yet!" 
+else
+   nautilus ${IMAGES_DIRECTORY}
+fi
+
+exit 0

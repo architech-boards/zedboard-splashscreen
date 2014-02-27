@@ -1,0 +1,1 @@
+A deeply embedded board with a Renesas RZ/A1 microcontroller, USB, ethernet, SD card and NOR flash.

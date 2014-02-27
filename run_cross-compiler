@@ -1,0 +1,5 @@
+#!/bin/bash
+cd ../sysroot
+source ../toolchain/environment
+gnome-terminal
+exit 0
