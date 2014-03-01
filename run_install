@@ -306,6 +306,7 @@ while read LINE; do
 					rm -f $CONF
 					wget http://downloads.architechboards.com/zedboard/sdk/dora/$CONF
 					[ $? -eq 0 ] || { undo_backup "workspace"; rm sdk.txt; internet_error; }
+					sed -i "s|@HOME@|${HOME}|g" $CONF
 					mkdir -p $PATH_CONF > /dev/null 2>&1
 					mv $CONF $PATH_CONF
                     ;;
