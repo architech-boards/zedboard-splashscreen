@@ -1,2 +1,6 @@
 #!/bin/bash
+cd ..
+ROOTDIR_SDK=`pwd`
+cd eclipse
+./eclipse -vm ${ROOTDIR_SDK}/java/bin -data ${ROOTDIR_SDK}/workspace/eclipse
 exit 0

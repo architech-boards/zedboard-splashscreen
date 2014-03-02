@@ -6,7 +6,9 @@
 YOCTO_DIRECTORY="yocto"
 cd ..
 ROOT_DIRECTORY=`pwd`
+BASEROOT_SDK=${ROOT_DIRECTORY}
 NR_CPUS=`grep -c ^processor /proc/cpuinfo`
+WGET_TIMEOUT=5
 DEFAULT_MACHINE="zedboard"
 
 ###########################################################################################################
@@ -52,24 +54,29 @@ PARALLEL_MAKE=${BB_NUMBER_THREADS}
 if [ -n "`grep "^PARALLEL_MAKE" conf/local.conf`" ]
 then
     MATCH_LINE=`grep "^PARALLEL_MAKE" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"${PARALLEL_MAKE}\"|g" conf/local.conf
+    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"|g" conf/local.conf
 elif [ -n "`grep "^#PARALLEL_MAKE" conf/local.conf`" ]
 then
     MATCH_LINE=`grep "^#PARALLEL_MAKE" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"${PARALLEL_MAKE}\"|g" conf/local.conf   
+    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"|g" conf/local.conf   
 else
-    echo "PARALLEL_MAKE ?= \"${PARALLEL_MAKE}\"" >> conf/local.conf
+    echo "PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"" >> conf/local.conf
 fi
 
 if [ -n "`grep "^MACHINE" conf/local.conf`" ]
 then
     MATCH_LINE=`grep "^MACHINE" conf/local.conf`
-    if [ -z "`echo $MATCH_LINE | grep zedboard`" ]
-    then
-        sed -i "s|^${MATCH_LINE}|MACHINE ??= \"${DEFAULT_MACHINE}\"|g" conf/local.conf
-    fi
+    sed -i "s|^${MATCH_LINE}|MACHINE ??= \"${DEFAULT_MACHINE}\"|g" conf/local.conf
 else
     echo "MACHINE ??= \"${DEFAULT_MACHINE}\"" >> conf/local.conf
+fi
+
+if [ -n "`grep "^PACKAGE_CLASSES" conf/local.conf`" ]
+then
+    MATCH_LINE=`grep "^PACKAGE_CLASSES" conf/local.conf`
+    sed -i "s|^${MATCH_LINE}|PACKAGE_CLASSES ?= \"package_ipk\"|g" conf/local.conf
+else
+    echo "PACKAGE_CLASSES ?= \"package_ipk\"" >> conf/local.conf
 fi
 
 ###########################################################################################################
@@ -126,7 +133,7 @@ cd ${ROOT_DIRECTORY}
 rm -rf temp
 mkdir -p temp
 cd temp
-wget http://downloads.architechboards.com/zedboard/toolchain/dora/toolchain.txt
+wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/toolchain/dora/toolchain.txt
 [ $? -eq 0 ] || { cd ..; rm -rf temp; internet_error; }
 TOOLCHAIN_TARBALL=`cat toolchain.txt | awk -F" " '{print $1}'`
 TOOLCHAIN_MD5=`cat toolchain.txt | awk -F" " '{print $2}'`
@@ -142,7 +149,7 @@ fi
 
 if [ "${INSTALL_TOOLCHAIN}" == "yes" ]
 then
-    wget http://downloads.architechboards.com/zedboard/toolchain/dora/${TOOLCHAIN_TARBALL}.tar.gz
+    wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/toolchain/dora/${TOOLCHAIN_TARBALL}.tar.gz
     [ $? -eq 0 ] || { cd ..; rm -rf temp; internet_error; }
     sync
     DOWNLOAD_MD5=`md5sum ${TOOLCHAIN_TARBALL}.tar.gz | awk -F" " '{print $1}'`
@@ -154,6 +161,7 @@ fi
 
 cd ..
 rm -rf temp/
+
 
 ###########################################################################################################
 # Installing sdk enviroment
@@ -185,11 +193,25 @@ install_file()
 	FILE=$CMD.tgz
 	do_backup $CMD
 	rm -rf $CMD
-	wget ${URL}
+	wget --timeout=${WGET_TIMEOUT} ${URL}
 	[ $? -eq 0 ] || { rm -f $FILE; undo_backup $CMD; rm sdk.txt; internet_error; }
 	mkdir $CMD
 	tar -zxf $FILE -C $CMD
+	find ${CMD} -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
 	[ $? -eq 0 ] || { rm -f $FILE; undo_backup $CMD; rm sdk.txt; internet_error; }
+	rm -f $FILE
+}
+
+install_qt_local_libraries()
+{
+	echo Install $CMD
+	URL=`echo $LINE | awk -F"@" '{print $2}'`
+	FILE=$CMD.tgz
+	wget --timeout=${WGET_TIMEOUT} ${URL}
+	[ $? -eq 0 ] || { rm -f $FILE; rm sdk.txt; internet_error; }
+	sudo tar -zxf $FILE -C /usr/local
+    	sudo find /usr/local/Trolltech -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
+	[ $? -eq 0 ] || { rm -f $FILE; rm sdk.txt; internet_error; }
 	rm -f $FILE
 }
 
@@ -200,26 +222,9 @@ killall qtcreator
 
 # dowload script file to know what to do
 rm -f sdk.txt
-wget http://downloads.architechboards.com/zedboard/sdk/dora/sdk.txt
+wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/sdk/dora/sdk.txt
 [ $? -eq 0 ] || { rm sdk.txt; internet_error; }
 
-#if [ -f sdk.txt.old ] 
-#then
-#	MD5_OLD=`md5sum sdk.txt.old | awk -F" " '{print $1}'`
-#	MD5_NOW=`md5sum sdk.txt | awk -F" " '{print $1}'`
-#
-#   [ "${MD5_OLD}" == "${MD5_NOW}" ] && { echo "uguali"; }
-#fi
-
-# create backup of eclipse, workspace and java folders
-#if [ -d eclipse ]
-#then
-#	tar -zcf eclipse.backup.$DATE_BACKUP.tgz eclipse workspace java qtcreator qtlib
-#	[ $? -eq 0 ] || { internet_error; }
-#fi
-
-
-cat sdk.txt | \
 while read LINE; do
 
 	CMD=`echo $LINE | awk -F"@" '{print $1}'`
@@ -242,7 +247,7 @@ while read LINE; do
 					then
 						do_backup "java"
 						rm -rf java
-						wget --no-cookies --no-check-certificate --header $COOKIE $URL
+						wget --timeout=${WGET_TIMEOUT} --no-cookies --no-check-certificate --header $COOKIE $URL
 						[ $? -eq 0 ] || { rm -f $FILE; undo_backup "java"; rm sdk.txt; internet_error; }
 						mkdir java
 						tar -zxf $FILE -C java
@@ -261,17 +266,17 @@ while read LINE; do
 					FILE=`echo $LINE | awk -F"@" '{print $3}'`
 					do_backup "eclipse"
 					rm -rf eclipse
-					wget ${URL}
+					wget --timeout=${WGET_TIMEOUT} ${URL}
 					[ $? -eq 0 ] || { rm -f $FILE; undo_backup "eclipse"; rm sdk.txt; internet_error; }
 					tar -zxf $FILE
 					[ $? -eq 0 ] || { rm -f $FILE; undo_backup "eclipse"; rm sdk.txt; internet_error; }
 					rm -f $FILE
 					;;
 				"qt-arm")
-					install_file
+					install_qt_local_libraries
 					;;
 				"qt-x86")
-					install_file
+					install_qt_local_libraries
 					;;
 				"qtcreator")
 					install_file
@@ -283,11 +288,13 @@ while read LINE; do
 					FILE=`echo $LINE | awk -F"@" '{print $3}'`
 					do_backup "qtcreator/conf"
 					rm -f qtcreator/conf
-					wget $URL
+					wget --timeout=${WGET_TIMEOUT}$URL
 					[ $? -eq 0 ] || { undo_backup "qtcreator/conf"; rm sdk.txt; internet_error; }
 					tar -zxf $FILE -C qtcreator/
+					find qtcreator/ -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
 					rm -f $FILE
-                    ;;
+					mkdir -p ${ROOT_DIRECTORY}/workspace/qt
+                    ;; 
                 "plugin")
 				# install or upgrade plugin of eclipse
 					echo "PLUGIN"
@@ -304,15 +311,16 @@ while read LINE; do
 					CONF=`echo $LINE | awk -F"@" '{print $3}'`
 					do_backup "workspace"
 					rm -f $CONF
-					wget http://downloads.architechboards.com/zedboard/sdk/dora/$CONF
+					wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/sdk/dora/$CONF
 					[ $? -eq 0 ] || { undo_backup "workspace"; rm sdk.txt; internet_error; }
-					sed -i "s|@HOME@|${HOME}|g" $CONF
+					sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" $CONF
 					mkdir -p $PATH_CONF > /dev/null 2>&1
 					mv $CONF $PATH_CONF
                     ;;
 				"build_workspace")
 				# build or rebuild the workspace
 					./eclipse/eclipse -vm java/bin -nosplash -application org.eclipse.jdt.apt.core.aptBuild -data ${ROOT_DIRECTORY}/workspace/eclipse
+					mkdir -p ${ROOT_DIRECTORY}/workspace/qt
 					;;
                 "cmd")
 				# execute a shell command from the script
@@ -323,11 +331,9 @@ while read LINE; do
                 *)
 					echo ""              
           esac
-done
+done < sdk.txt
 
 [ -f sdk.txt ] && { mv sdk.txt sdk.txt.old; }
-
-
 
 
 exit 0

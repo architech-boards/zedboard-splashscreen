@@ -1,2 +1,4 @@
 #!/bin/bash
+cd ../qtcreator/bin
+./qtcreator -settingspath ../conf
 exit 0
