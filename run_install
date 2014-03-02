@@ -288,7 +288,7 @@ while read LINE; do
 					FILE=`echo $LINE | awk -F"@" '{print $3}'`
 					do_backup "qtcreator/conf"
 					rm -f qtcreator/conf
-					wget --timeout=${WGET_TIMEOUT}$URL
+					wget --timeout=${WGET_TIMEOUT} $URL
 					[ $? -eq 0 ] || { undo_backup "qtcreator/conf"; rm sdk.txt; internet_error; }
 					tar -zxf $FILE -C qtcreator/
 					find qtcreator/ -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
