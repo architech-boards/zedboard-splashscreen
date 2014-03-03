@@ -9,7 +9,7 @@ ROOT_DIRECTORY=`pwd`
 BASEROOT_SDK=${ROOT_DIRECTORY}
 NR_CPUS=`grep -c ^processor /proc/cpuinfo`
 WGET_TIMEOUT=5
-DEFAULT_MACHINE="zedboard"
+DEFAULT_MACHINE="zedboard-zynq7"
 
 ###########################################################################################################
 # Helper functions
