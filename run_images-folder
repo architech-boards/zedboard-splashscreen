@@ -1,5 +1,5 @@
 #!/bin/bash
-IMAGES_DIRECTORY="../yocto/build/tmp/deploy/images/"
+IMAGES_DIRECTORY="../yocto/build/tmp/deploy/images/zedboard-zynq7"
 
 if [ ! -d ${IMAGES_DIRECTORY} ]
 then
