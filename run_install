@@ -398,54 +398,6 @@ do
 done
 
 ###########################################################################################################
-# Installing NFS Server
-
-INSTALLED=`dpkg-query -l | grep nfs-kernel-server |& awk -F" " '{ print $1 }'`
-
-if [ "${INSTALLED}" != "ii" ]
-then
-	echo "Install NFS server..."
-	sudo apt-get --force-yes install nfs-kernel-server
-	sudo service nfs-kernel-server restart
-	[ -f /etc/exports ] || { sudo touch /etc/exports; }
-fi
-
-grep "zedboard" /etc/exports
-[ $? -eq 1 ] && { sudo echo "${BASEROOT_SDK}/sysroot *(rw,nohide,insecure,no_subtree_check,async,no_root_squash)" | sudo tee -a /etc/exports; sudo service nfs-kernel-server restart; }
-
-###########################################################################################################
-# Installing DHCP Server
-
-INSTALLED=`dpkg-query -l | grep dhcp3-server |& awk -F" " '{ print $1 }'`
-
-if [ "${INSTALLED}" != "ii" ]
-then
-	echo "Install DHCP server"
-	sudo apt-get --force-yes install dhcp3-server
-    	wget http://downloads.architechboards.com/tibidabo/script/dora/dhcpd.conf
-    	[ $? -eq 0 ] || { sudo apt-get --force-yes remove dhcp3-server; internet_error; }
-	sudo mv dhcpd.conf /etc/dhcp/
-	sudo service isc-dhcp-server restart
-fi
-
-###########################################################################################################
-# Installing TFTP Server
-
-INSTALLED=`dpkg-query -l | grep xinetd |& awk -F" " '{ print $1 }'`
-
-if [ "${INSTALLED}" != "ii" ]
-then
-	echo "Install TFTP server"
-	sudo apt-get --force-yes install xinetd tftpd tftp
-    	wget http://downloads.architechboards.com/tibidabo/script/dora/tftp
-    	[ $? -eq 0 ] || { sudo apt-get --force-yes remove xinetd tftpd tftp; internet_error; }
-	sudo sed -i "s|@HOME@|${HOME}|g" tftp
-	sudo mv tftp /etc/xinetd.d/
-	mkdir ${HOME}/tftpboot
-	sudo service xinetd restart
-fi
-
-###########################################################################################################
 # Script post-install
 
 cd $BASEROOT_SDK
