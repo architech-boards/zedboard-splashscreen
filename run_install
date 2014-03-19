@@ -19,7 +19,7 @@ WGET_TIMEOUT=60
 # Helper functions
 
 function internet_error {
-    echo "ERROR: Impossible to connect to Internet, double check your Internet connection."
+    zenity --error --text "ERROR: Impossible to connect to Internet, double check your Internet connection."
     exit 1
 }
 
@@ -255,12 +255,14 @@ install_file()
 
 install_qt_local_libraries()
 {
+	local SUDO_PASSWORD
+	SUDO_PASSWORD='architech\n'
 	echo Install $CMD
 	URL=`echo $LINE | awk -F"@" '{print $2}'`
 	FILE=$CMD.tgz
 	wget --timeout=${WGET_TIMEOUT} ${URL}
 	[ $? -eq 0 ] || { rm -f $FILE; rm sdk.txt; internet_error; }
-	sudo tar -zxf $FILE -C /usr/local
+	echo -e ${SUDO_PASSWORD} | sudo -S bash -c "tar -zxf $FILE -C /usr/local"
     	sudo find /usr/local/Trolltech -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
 	[ $? -eq 0 ] || { rm -f $FILE; rm sdk.txt; internet_error; }
 	rm -f $FILE
@@ -299,15 +301,15 @@ do
 						# install or upgrade java runtime
 						"java")
 							echo "JAVA"
-							VERSION=`echo $LINE | awk -F"@" '{print $2}'`
-							COOKIE=`echo $LINE | awk -F"@" '{print $3}'`
-							URL=`echo $LINE | awk -F"@" '{print $4}'`
-							FILE=`echo $LINE | awk -F"@" '{print $5}'`
+							URL=`echo $LINE | awk -F"@" '{print $2}'`
+							FILE=`echo $LINE | awk -F"@" '{print $3}'`
+							VERSION=`echo $LINE | awk -F"@" '{print $4}'`
+
 							if [ ! -d java/$VERSION ]
 							then
 								do_backup "java"
 								rm -rf java
-								wget --timeout=${WGET_TIMEOUT} --no-cookies --no-check-certificate --header $COOKIE $URL
+								wget --timeout=${WGET_TIMEOUT} ${URL}
 								[ $? -eq 0 ] || { rm -f $FILE; undo_backup "java"; rm sdk.txt; internet_error; }
 								mkdir java
 								tar -zxf $FILE -C java
