@@ -1,5 +1,9 @@
 #!/bin/bash
 
+TITLE_TERMINAL=`cat name.txt`
+PS_FATHER=`ps -ocommand= -p $PPID | awk -F/ '{print $NF}' | awk '{print $1}'`
+[ "$PS_FATHER" == "init" ] && { gnome-terminal --disable-factory -t ${TITLE_TERMINAL} -e 'bash -c "./run_install"'; exit 0; }
+
 ###########################################################################################################
 # Parameters
 
