@@ -1,1 +1,1 @@
-A deeply embedded board with a Renesas RZ/A1 microcontroller, USB, ethernet, SD card and NOR flash.
+The zedboard Board is a single-board computer based on Xilinx's Zynq device family. It uses a Xilinx Zynq Z-7020 device.
