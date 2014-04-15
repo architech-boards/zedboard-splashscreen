@@ -1,8 +1,30 @@
 #!/bin/bash
 
+#######################################################################################################################
+# if the father is the splashscreen then will opens a new terminal
+
 TITLE_TERMINAL=`cat name.txt`
 PS_FATHER=`ps -ocommand= -p $PPID | awk -F/ '{print $NF}' | awk '{print $1}'`
 [ "$PS_FATHER" == "init" ] && { gnome-terminal --disable-factory -t ${TITLE_TERMINAL} -e 'bash -c "./run_install"'; exit 0; }
+
+#######################################################################################################################
+# Library check
+
+if [ ! -d libsh ]
+then
+	git clone https://github.com/architech-boards/libsh.git
+	[ $? -eq 0 ] || { internet_error; }
+fi
+cd libsh
+git pull
+[ $? -eq 0 ] || { internet_error; }
+source lib.sh
+cd ..
+
+###########################################################################################################
+# Check SUDO_PASSWORD
+
+get_sudo_password
 
 ###########################################################################################################
 # Parameters
@@ -15,28 +37,7 @@ NR_CPUS=`grep -c ^processor /proc/cpuinfo`
 DEFAULT_MACHINE="zedboard-zynq7"
 WGET_TIMEOUT=60
 
-# Uncomment for see the debug comments
-#DEBUG=1
-#set -x
 
-###########################################################################################################
-# Helper functions
-
-function internet_error {
-    zenity --error --text "ERROR: Impossible to connect to Internet, double check your Internet connection."
-    exit 1
-}
-
-###########################################################################################################
-# Will echo passed parameters only if DEBUG is set to a value. 
-# S1 message 
-
-debecho () {
-  if [ ! -z "$DEBUG" ]; then
-     echo "!!! $1 !!!" >&2
-  fi
-}
-		
 ###########################################################################################################
 # Get in remote the last version of the package
 # S1 url remote 
@@ -82,31 +83,7 @@ source poky/oe-init-build-env
 # conf/local.conf customization
 
 cd ${ROOT_DIRECTORY}/yocto/build
-BB_NUMBER_THREADS=`echo "${NR_CPUS} * 2" | bc -l`
-if [ -n "`grep "^BB_NUMBER_THREADS" conf/local.conf`" ]
-then
-    MATCH_LINE=`grep "^BB_NUMBER_THREADS" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|BB_NUMBER_THREADS ?= \"${BB_NUMBER_THREADS}\"|g" conf/local.conf
-elif [ -n "`grep "^#BB_NUMBER_THREADS" conf/local.conf`" ]
-then
-    MATCH_LINE=`grep "^#BB_NUMBER_THREADS" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|BB_NUMBER_THREADS ?= \"${BB_NUMBER_THREADS}\"|g" conf/local.conf   
-else
-    echo "BB_NUMBER_THREADS ?= \"${BB_NUMBER_THREADS}\"" >> conf/local.conf
-fi
-
-PARALLEL_MAKE=${BB_NUMBER_THREADS}
-if [ -n "`grep "^PARALLEL_MAKE" conf/local.conf`" ]
-then
-    MATCH_LINE=`grep "^PARALLEL_MAKE" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"|g" conf/local.conf
-elif [ -n "`grep "^#PARALLEL_MAKE" conf/local.conf`" ]
-then
-    MATCH_LINE=`grep "^#PARALLEL_MAKE" conf/local.conf`
-    sed -i "s|^${MATCH_LINE}|PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"|g" conf/local.conf   
-else
-    echo "PARALLEL_MAKE ?= \"-j ${PARALLEL_MAKE}\"" >> conf/local.conf
-fi
+set_cpu_localconf ${NR_CPUS} ./conf
 
 if [ -n "`grep "^MACHINE" conf/local.conf`" ]
 then
@@ -259,15 +236,13 @@ install_file()
 
 install_qt_local_libraries()
 {
-	local SUDO_PASSWORD
-	SUDO_PASSWORD='architech\n'
 	echo Install $CMD
 	URL=`echo $LINE | awk -F"@" '{print $2}'`
 	FILE=$CMD.tgz
 	wget --timeout=${WGET_TIMEOUT} ${URL}
 	[ $? -eq 0 ] || { rm -f $FILE; rm conf/sdk.txt; internet_error; }
-	echo -e ${SUDO_PASSWORD} | sudo -S bash -c "tar -zxf $FILE -C /usr/local"
-    	sudo find /usr/local/Trolltech -type f -exec sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" '{}' \;
+	do_sudo "tar -zxf $FILE -C /usr/local"
+    do_sudo "find /usr/local/Trolltech -type f -exec sed -i \"s|@BASEROOT_SDK@|${BASEROOT_SDK}|g\" '{}' \;"
 	[ $? -eq 0 ] || { rm -f $FILE; rm conf/sdk.txt; internet_error; }
 	rm -f $FILE
 }
