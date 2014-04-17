@@ -3,11 +3,8 @@
 #######################################################################################################################
 # Library check
 
-if [ ! -d libsh ]
-then
-	git clone https://github.com/architech-boards/libsh.git
-	if [ ! $? -eq 0 ]
-    then
+function message_fail_libsh()
+{
 	    local ZENITY_INSTALLED
         ZENITY_INSTALLED=`dpkg-query -l | grep zenity-common |& awk -F" " '{ print $1 }'`
 
@@ -17,12 +14,16 @@ then
 	    else
 		    zenity --error --text "Impossible to connect to internet. Please, double check your Internet connection"
 	    fi
-        exit 1
-    fi
+}
+
+if [ ! -d libsh ]
+then
+	git clone https://github.com/architech-boards/libsh.git
+	[ $? -eq 0 ] || { message_fail_libsh; exit 1; }
 fi
 cd libsh
 git pull
-[ $? -eq 0 ] || { internet_error; }
+[ $? -eq 0 ] || { message_fail_libsh; exit 1; }
 source lib.sh
 cd ..
 
