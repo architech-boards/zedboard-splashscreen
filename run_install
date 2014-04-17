@@ -318,9 +318,6 @@ do
 								[ $? -eq 0 ] || { rm -f $FILE; rm -rf java; undo_backup "java"; rm conf/sdk.txt; internet_error; }
 								rm -f $FILE
 								mv java/$VERSION/* java/
-								#echo export PATH=$PATH:$ROOT_DIRECTORY/java/bin > java/env.txt
-								#chmod 777 java/env.txt
-								#. ./java/env.txt
 							fi
 							;;
 						# install
