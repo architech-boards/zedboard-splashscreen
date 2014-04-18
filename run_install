@@ -276,24 +276,13 @@ do
 
 			CMD=`echo "${LINE}" | awk -F"@" '{print $1}'`
 
-			if [ -f conf/sdk.txt.old -a "${CMD}" != "doc" ] 
+			if [ -f conf/sdk.txt.old ] 
 			then
 				grep "${LINE}" conf/sdk.txt.old
 				[ $? -eq 0 ] && { continue; }
 			fi
 
 			case  $CMD  in
-						# documentation, always updates it
-						"doc")
-							echo "DOC"
-                            URL=`echo $LINE | awk -F"@" '{print $2}'`
-                            FILE=`echo $LINE | awk -F"@" '{print $3}'`
-							mkdir -p docs;
-							wget --timeout=${WGET_TIMEOUT} ${URL}
-							[ $? -eq 0 ] || { rm -f $FILE; internet_error; }
-							unzip -o $FILE -d docs
-							rm -f $FILE
-						;;
 						# install or upgrade java runtime
 						"java")
 							echo "JAVA"
@@ -382,13 +371,33 @@ do
 							${EXECMD}
 							;;        
 						*)
-							echo ""              
+							echo "IGNORED: ${LINE}"
 				  esac
 		done < conf/sdk.txt
 
 		[ -f conf/sdk.txt ] && { mv conf/sdk.txt conf/sdk.txt.old; }
 		sed -i "s|sdk:$((LOCAL_VERSION-1))|sdk:${LOCAL_VERSION}|g" conf/versions
 done
+
+###########################################################################################################
+# Installing documentation
+
+cd $BASEROOT_SDK
+wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/sdk/dora/getdoc.txt
+[ $? -eq 0 ] || { rm -f getdoc.txt; internet_error; }
+URL=`grep "@" getdoc.txt | awk -F"@" '{print $1}'`
+FILE=`grep "@" getdoc.txt | awk -F"@" '{print $2}'`
+rm getdoc.txt
+mkdir -p docs;
+if [ "${URL}" != "" -a "${FILE}" != "" ]
+then
+    wget --timeout=${WGET_TIMEOUT} ${URL}
+    [ $? -eq 0 ] || { rm -f $FILE; internet_error; }
+    unzip -o $FILE -d docs
+    rm -f $FILE
+else
+    echo "No documentation avaiable"
+fi
 
 ###########################################################################################################
 # Script post-install

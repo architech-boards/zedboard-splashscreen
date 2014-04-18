@@ -1,4 +1,4 @@
 #!/bin/bash
 HTML=`find ../docs -name index.html`
-firefox ${HTML
+firefox ${HTML}
 exit 0
