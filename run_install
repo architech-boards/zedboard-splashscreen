@@ -74,10 +74,10 @@ mkdir -p ${YOCTO_DIRECTORY}
 cd ${YOCTO_DIRECTORY}
 if [ ! -d .repo ]
 then
-    repo init -u https://github.com/architech-boards/zedboard-manifest.git -b dora -m manifest.xml
+    repo init -u https://github.com/architech-boards/zedboard-manifest.git -b dora -m manifest.xml > /dev/null 2>&1
     [ $? -eq 0 ] || { rm -rf .repo; internet_error; }
 fi
-repo sync
+repo sync > /dev/null 2>&1
 source poky/oe-init-build-env
 
 ###########################################################################################################
