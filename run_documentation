@@ -1,6 +1,6 @@
 #!/bin/bash
 
-YOCTO_VERSION=`git branch | awk -F" " '{print $2}'`
+YOCTO_VERSION=`git branch -a | grep "*" | awk -F" " '{print $2}'`
 BOARD_ALIAS=`cat name.txt | tr [:upper:] [:lower:] | tr ' ' '-'`
 WGET_TIMEOUT=2
 
