@@ -274,6 +274,7 @@ do
 		rm -f conf/sdk.txt
 		wget --timeout=${WGET_TIMEOUT} -P conf ${URL_DOWNLOAD}/zedboard/sdk/dora/${LOCAL_VERSION}/sdk.txt
 		[ $? -eq 0 ] || { rm conf/sdk.txt; internet_error; }
+        sed -i "s|#URL_DOWNLOAD#|${URL_DOWNLOAD}|g" conf/sdk.txt
 
 		while read LINE; do
 
