@@ -28,6 +28,8 @@ source lib.sh
 get_sudo_password ${SUDO_PASSWORD}
 cd ..
 
+URL_DOWNLOAD=$(get_url_download)
+
 #######################################################################################################################
 # Check maintenance
 
@@ -61,7 +63,7 @@ function get_remote_version {
 # Script pre-install
 
 cd $BASEROOT_SDK
-wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/script/dora/pre-script.sh
+wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/script/dora/pre-script.sh
 [ $? -eq 0 ] || { internet_error; }
 chmod 777 pre-script.sh
 ./pre-script.sh
@@ -160,7 +162,7 @@ fi
 
 cd ${ROOT_DIRECTORY}
 
-get_remote_version http://downloads.architechboards.com/zedboard/toolchain/dora
+get_remote_version ${URL_DOWNLOAD}/zedboard/toolchain/dora
 LOCAL_VERSION=`grep "toolchain" conf/versions | awk -F":" '{print $2}'`
 debecho "LOCAL_VERSION of toolchain is ${LOCAL_VERSION}"
 while [ ${LOCAL_VERSION} -lt ${REMOTE_VERSION} ] 
@@ -171,7 +173,7 @@ do
 		rm -rf temp
 		mkdir -p temp
 		cd temp
-		wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/toolchain/dora/${LOCAL_VERSION}/toolchain.txt
+		wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/toolchain/dora/${LOCAL_VERSION}/toolchain.txt
 		[ $? -eq 0 ] || { cd ..; rm -rf temp; internet_error; }
 		TOOLCHAIN_TARBALL=`cat toolchain.txt | awk -F" " '{print $1}'`
 		TOOLCHAIN_MD5=`cat toolchain.txt | awk -F" " '{print $2}'`
@@ -187,7 +189,7 @@ do
 
 		if [ "${INSTALL_TOOLCHAIN}" == "yes" ]
 		then
-			wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/toolchain/dora/${LOCAL_VERSION}/${TOOLCHAIN_TARBALL}.tar.gz
+			wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/toolchain/dora/${LOCAL_VERSION}/${TOOLCHAIN_TARBALL}.tar.gz
 			[ $? -eq 0 ] || { cd ..; rm -rf temp; internet_error; }
 			sync
 			DOWNLOAD_MD5=`md5sum ${TOOLCHAIN_TARBALL}.tar.gz | awk -F" " '{print $1}'`
@@ -259,7 +261,7 @@ cd $ROOT_DIRECTORY
 killall eclipse
 killall qtcreator
 
-get_remote_version http://downloads.architechboards.com/zedboard/sdk/dora
+get_remote_version ${URL_DOWNLOAD}/zedboard/sdk/dora
 LOCAL_VERSION=`grep "sdk" conf/versions | awk -F":" '{print $2}'`
 debecho "LOCAL_VERSION of sdk is ${LOCAL_VERSION}"
 
@@ -270,7 +272,7 @@ do
 
 		# dowload script file to know what to do
 		rm -f conf/sdk.txt
-		wget --timeout=${WGET_TIMEOUT} -P conf http://downloads.architechboards.com/zedboard/sdk/dora/${LOCAL_VERSION}/sdk.txt
+		wget --timeout=${WGET_TIMEOUT} -P conf ${URL_DOWNLOAD}/zedboard/sdk/dora/${LOCAL_VERSION}/sdk.txt
 		[ $? -eq 0 ] || { rm conf/sdk.txt; internet_error; }
 
 		while read LINE; do
@@ -354,7 +356,7 @@ do
 							echo "CONF"
 							PATH_CONF=`echo $LINE | awk -F"@" '{print $2}'`
 							FILE=`echo $LINE | awk -F"@" '{print $3}'`
-							wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/sdk/dora/${LOCAL_VERSION}/$FILE
+							wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/sdk/dora/${LOCAL_VERSION}/$FILE
 							[ $? -eq 0 ] || { rm conf/sdk.txt; internet_error; }
 							sed -i "s|@BASEROOT_SDK@|${BASEROOT_SDK}|g" $FILE
 							mkdir -p $PATH_CONF > /dev/null 2>&1
@@ -384,7 +386,7 @@ done
 # Installing documentation
 
 cd $BASEROOT_SDK
-wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/sdk/dora/getdoc.txt
+wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/sdk/dora/getdoc.txt
 [ $? -eq 0 ] || { rm -f getdoc.txt; internet_error; }
 URL=`grep "@" getdoc.txt | awk -F"@" '{print $1}'`
 FILE=`grep "@" getdoc.txt | awk -F"@" '{print $2}'`
@@ -404,7 +406,7 @@ fi
 # Script post-install
 
 cd $BASEROOT_SDK
-wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/zedboard/script/dora/post-script.sh
+wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/zedboard/script/dora/post-script.sh
 [ $? -eq 0 ] || { internet_error; }
 chmod 777 post-script.sh
 ./post-script.sh
