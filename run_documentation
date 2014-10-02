@@ -2,7 +2,7 @@
 
 YOCTO_VERSION=`git branch -a | grep "*" | awk -F" " '{print $2}'`
 BOARD_ALIAS=`cat name.txt | tr [:upper:] [:lower:] | tr ' ' '-'`
-WGET_TIMEOUT=2
+WGET_TIMEOUT=5
 
 function firefox_offline()
 {
@@ -12,6 +12,11 @@ function firefox_offline()
     firefox ${HTML}
 }
 
+cd libsh
+git pull
+[ $? -eq 0 ] || { cd ..; firefox_offline; exit 0; }
+source lib.sh
+cd ..
 URL_DOWNLOAD=$(get_url_download)
 
 wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/${BOARD_ALIAS}/sdk/${YOCTO_VERSION}/getdoc.txt
