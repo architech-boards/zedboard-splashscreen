@@ -12,7 +12,9 @@ function firefox_offline()
     firefox ${HTML}
 }
 
-wget --timeout=${WGET_TIMEOUT} http://downloads.architechboards.com/${BOARD_ALIAS}/sdk/${YOCTO_VERSION}/getdoc.txt
+URL_DOWNLOAD=$(get_url_download)
+
+wget --timeout=${WGET_TIMEOUT} ${URL_DOWNLOAD}/${BOARD_ALIAS}/sdk/${YOCTO_VERSION}/getdoc.txt
 [ $? -eq 0 ] || { rm -f getdoc.txt; firefox_offline; exit 0; }
 URL=`grep "SITE=" getdoc.txt | awk -F"=" '{print $2}'`
 rm getdoc.txt
