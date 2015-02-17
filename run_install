@@ -110,11 +110,33 @@ else
     echo "PACKAGE_CLASSES ?= \"package_ipk\"" >> conf/local.conf
 fi
 
+if [ -n "`grep "^IMAGE_INSTALL_append" conf/local.conf`" ]
+then
+	MATCH_LINE=`grep "^IMAGE_INSTALL_append" conf/local.conf`
+	sed -i "s|^${MATCH_LINE}|IMAGE_INSTALL_append ?= \"kernel-modules kernel-devicetree\"|g" conf/local.conf
+else
+	echo "IMAGE_INSTALL_append ?= \"kernel-modules kernel-devicetree\"" >> conf/local.conf
+fi
+if [ -n "`grep "^DL_DIR" conf/local.conf`" ]
+then
+	MATCH_LINE=`grep "^DL_DIR" conf/local.conf`
+	sed -i "s|^${MATCH_LINE}|DL_DIR = \"/home/architech/architech_sdk/architech/downloads\"|g" conf/local.conf
+else
+	echo "DL_DIR = \"/home/architech/architech_sdk/architech/downloads\"" >> conf/local.conf
+fi
+if [ -n "`grep "^SSTATE_DIR" conf/local.conf`" ]
+then
+	MATCH_LINE=`grep "^SSTATE_DIR" conf/local.conf`
+	sed -i "s|^${MATCH_LINE}|SSTATE_DIR = \"/home/architech/architech_sdk/architech/sstate-cache\"|g" conf/local.conf
+else
+	echo "SSTATE_DIR = \"/home/architech/architech_sdk/architech/sstate-cache\"" >> conf/local.conf
+fi
+
 ###########################################################################################################
 # conf/bblayers.conf customization
 
 cd ${ROOT_DIRECTORY}/yocto/build
-TO_MATCH="poky/meta poky/meta-yocto poky/meta-yocto-bsp meta-xilinx"
+TO_MATCH="poky/meta poky/meta-yocto poky/meta-yocto-bsp meta-xilinx meta-zedboard"
 BBLAYERS=""
 BBLAYERS_FOUND=`sed -n "/^BBLAYERS /,/\"/ p" conf/bblayers.conf | sed "s|BBLAYERS||g" | sed "s|?||g" | sed "s|=||g" | sed "s|\"||g" | sed "s|\n||g" | sed "s|\\\\\\||g"`
 

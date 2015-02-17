@@ -1,4 +1,3 @@
 #!/bin/bash
-cd ../qtcreator/bin
-./qtcreator -settingspath ../conf
+zenity --error --text="No QT for ZedBoard!"
 exit 0
