@@ -43,7 +43,7 @@ cd ..
 ROOT_DIRECTORY=`pwd`
 BASEROOT_SDK=${ROOT_DIRECTORY}
 NR_CPUS=`grep -c ^processor /proc/cpuinfo`
-DEFAULT_MACHINE="zedboard-zynq7"
+DEFAULT_MACHINE="zedboard"
 WGET_TIMEOUT=60
 RELEASE="dizzy"
 
@@ -116,7 +116,7 @@ then
 	MATCH_LINE=`grep "^IMAGE_INSTALL_append" conf/local.conf`
 	sed -i "s|^${MATCH_LINE}|IMAGE_INSTALL_append ?= \"kernel-modules kernel-devicetree\"|g" conf/local.conf
 else
-	echo "IMAGE_INSTALL_append ?= \"kernel-modules kernel-devicetree\"" >> conf/local.conf
+	echo "IMAGE_INSTALL_append ?= \" kernel-modules \"" >> conf/local.conf
 fi
 if [ -n "`grep "^DL_DIR" conf/local.conf`" ]
 then
