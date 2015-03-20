@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 #######################################################################################################################
 # Library check
 
@@ -111,6 +112,7 @@ else
     echo "PACKAGE_CLASSES ?= \"package_ipk\"" >> conf/local.conf
 fi
 
+
 if [ -n "`grep "^IMAGE_INSTALL_append" conf/local.conf`" ]
 then
 	MATCH_LINE=`grep "^IMAGE_INSTALL_append" conf/local.conf`
@@ -133,11 +135,20 @@ else
 	echo "SSTATE_DIR = \"/home/architech/architech_sdk/sstate-cache\"" >> conf/local.conf
 fi
 
+if [ -n "`grep "^CORE_IMAGE_EXTRA_INSTALL" conf/local.conf`" ]
+then
+	MATCH_LINE=`grep "^SCORE_IMAGE_EXTRA_INSTALL" conf/local.conf`
+	sed -i "s|^${MATCH_LINE}|CORE_IMAGE_EXTRA_INSTALL += \" wpa-supplicant wireless-tools openssl modutils-initscripts iw bluez5 lighttpd \"|g" conf/local.conf
+else
+	echo "CORE_IMAGE_EXTRA_INSTALL += \" wpa-supplicant wireless-tools openssl modutils-initscripts iw bluez5 lighttpd \"" >> conf/local.conf
+fi
+
+
 ###########################################################################################################
 # conf/bblayers.conf customization
 
 cd ${ROOT_DIRECTORY}/yocto/build
-TO_MATCH="poky/meta poky/meta-yocto poky/meta-yocto-bsp meta-xilinx meta-zedboard"
+TO_MATCH="poky/meta poky/meta-yocto poky/meta-yocto-bsp meta-openembedded/meta-oe meta-xilinx meta-zedboard"
 BBLAYERS=""
 BBLAYERS_FOUND=`sed -n "/^BBLAYERS /,/\"/ p" conf/bblayers.conf | sed "s|BBLAYERS||g" | sed "s|?||g" | sed "s|=||g" | sed "s|\"||g" | sed "s|\n||g" | sed "s|\\\\\\||g"`
 
