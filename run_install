@@ -383,7 +383,7 @@ do
 							REPOSITORY=`echo $LINE | awk -F"@" '{print $2}'`
 							PLUGIN=`echo $LINE | awk -F"@" '{print $3}'`
 							VERSION=`echo $LINE | awk -F"@" '{print $4}'`
-							./eclipse/eclipse -vm java/bin -application org.eclipse.equinox.p2.director -noSplash -repository $REPOSITORY -installIUs $PLUGIN/$VERSION
+							./eclipse/eclipse -application org.eclipse.equinox.p2.director -noSplash -repository $REPOSITORY -installIUs $PLUGIN/$VERSION
 							[ $? -eq 0 ] || { rm conf/sdk.txt; internet_error; }
 							;;
 						"conf")
@@ -399,7 +399,7 @@ do
 							;;
 						"build_workspace")
 						# build or rebuild the workspace
-							./eclipse/eclipse -vm java/bin -nosplash -application org.eclipse.jdt.apt.core.aptBuild -data ${ROOT_DIRECTORY}/workspace/eclipse
+							./eclipse/eclipse -nosplash -application org.eclipse.jdt.apt.core.aptBuild -data ${ROOT_DIRECTORY}/workspace/eclipse
 							mkdir -p ${ROOT_DIRECTORY}/workspace/qt
 							;;
 						"cmd")
