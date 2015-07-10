@@ -43,6 +43,9 @@ YOCTO_DIRECTORY="yocto"
 cd ..
 ROOT_DIRECTORY=`pwd`
 BASEROOT_SDK=${ROOT_DIRECTORY}
+cd ..
+ARCHITECH_DIRECTORY=`pwd`
+cd ${ROOT_DIRECTORY}
 NR_CPUS=`grep -c ^processor /proc/cpuinfo`
 DEFAULT_MACHINE="zedboard"
 WGET_TIMEOUT=60
@@ -123,16 +126,16 @@ fi
 if [ -n "`grep "^DL_DIR" conf/local.conf`" ]
 then
 	MATCH_LINE=`grep "^DL_DIR" conf/local.conf`
-	sed -i "s|^${MATCH_LINE}|DL_DIR = \"/home/architech/architech_sdk/downloads\"|g" conf/local.conf
+	sed -i "s|^${MATCH_LINE}|DL_DIR = \"${ARCHITECH_DIRECTORY}/downloads\"|g" conf/local.conf
 else
-	echo "DL_DIR = \"/home/architech/architech_sdk/downloads\"" >> conf/local.conf
+	echo "DL_DIR = \"${ARCHITECH_DIRECTORY}/downloads\"" >> conf/local.conf
 fi
 if [ -n "`grep "^SSTATE_DIR" conf/local.conf`" ]
 then
 	MATCH_LINE=`grep "^SSTATE_DIR" conf/local.conf`
-	sed -i "s|^${MATCH_LINE}|SSTATE_DIR = \"/home/architech/architech_sdk/sstate-cache\"|g" conf/local.conf
+	sed -i "s|^${MATCH_LINE}|SSTATE_DIR = \"${ARCHITECH_DIRECTORY}/sstate-cache\"|g" conf/local.conf
 else
-	echo "SSTATE_DIR = \"/home/architech/architech_sdk/sstate-cache\"" >> conf/local.conf
+	echo "SSTATE_DIR = \"${ARCHITECH_DIRECTORY}/sstate-cache\"" >> conf/local.conf
 fi
 
 if [ -n "`grep "^CORE_IMAGE_EXTRA_INSTALL" conf/local.conf`" ]
