@@ -43,7 +43,7 @@ YOCTO_DIRECTORY="yocto"
 cd ..
 ROOT_DIRECTORY=`pwd`
 BASEROOT_SDK=${ROOT_DIRECTORY}
-cd ..
+cd ../..
 ARCHITECH_DIRECTORY=`pwd`
 cd ${ROOT_DIRECTORY}
 NR_CPUS=`grep -c ^processor /proc/cpuinfo`
