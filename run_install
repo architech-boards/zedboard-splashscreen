@@ -140,7 +140,7 @@ fi
 
 if [ -n "`grep "^CORE_IMAGE_EXTRA_INSTALL" conf/local.conf`" ]
 then
-	MATCH_LINE=`grep "^SCORE_IMAGE_EXTRA_INSTALL" conf/local.conf`
+	MATCH_LINE=`grep "^CORE_IMAGE_EXTRA_INSTALL" conf/local.conf`
 	sed -i "s|^${MATCH_LINE}|CORE_IMAGE_EXTRA_INSTALL += \" wpa-supplicant wireless-tools openssl modutils-initscripts iw bluez5 lighttpd \"|g" conf/local.conf
 else
 	echo "CORE_IMAGE_EXTRA_INSTALL += \" wpa-supplicant wireless-tools openssl modutils-initscripts iw bluez5 lighttpd \"" >> conf/local.conf
